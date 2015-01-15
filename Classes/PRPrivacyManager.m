@@ -191,7 +191,10 @@
                     return PRPrivacyStatusDenied;
                 case kABAuthorizationStatusAuthorized:
                     return PRPrivacyStatusAuthorized;
+                default:
+                    break;
             }
+            break;
         }
         case PRPrivacyTypePhotos:
         {
@@ -205,6 +208,8 @@
                     return PRPrivacyStatusDenied;
                 case ALAuthorizationStatusAuthorized:
                     return PRPrivacyStatusAuthorized;
+                default:
+                    break;
             }
             break;
         }
@@ -219,10 +224,11 @@
                         return PRPrivacyStatusDenied;
                     case AVAudioSessionRecordPermissionGranted:
                         return PRPrivacyStatusAuthorized;
+                    default:
+                        break;
                 }
-            } else {
-                return PRPrivacyStatusNotDetermined;
             }
+            break;
         }
         case PRPrivacyTypeCamera:
         {
@@ -236,9 +242,12 @@
                     return PRPrivacyStatusDenied;
                 case AVAuthorizationStatusAuthorized:
                     return PRPrivacyStatusAuthorized;
+                default:
+                    break;
             }
         }
     }
+    return PRPrivacyStatusNotDetermined;
 }
 
 + (void)authorizeWithType:(PRPrivacyType)type completion:(void (^)(PRPrivacyStatus status))completion
