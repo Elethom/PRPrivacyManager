@@ -7,6 +7,7 @@
 //
 
 #import "PRPrivacyManager.h"
+#import <CoreLocation/CoreLocation.h>
 #import <AddressBook/AddressBook.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <AVFoundation/AVFoundation.h>
@@ -14,21 +15,60 @@
 
 #define IOS_VERSION_LESS_THAN(version) ([[[UIDevice currentDevice] systemVersion] compare:version options:NSNumericSearch] == NSOrderedAscending)
 
-@interface PRPrivacyManager ()
+@interface PRPrivacyManager () <CLLocationManagerDelegate>
 
+@property (nonatomic, strong) CLLocationManager *locationManager;
+@property (nonatomic, copy) void (^locationAuthorizationCompletion)(PRPrivacyStatus status);
+
++ (void)authorizeLocationOfSubtype:(PRPrivacySubtype)subtype
+                        Completion:(void (^)(PRPrivacyStatus))completion;
 + (void)authorizeContactsCompletion:(void (^)(PRPrivacyStatus status))completion;
 + (void)authorizePhotosCompletion:(void (^)(PRPrivacyStatus status))completion;
 + (void)authorizeMicrophoneCompletion:(void (^)(PRPrivacyStatus status))completion;
 + (void)authorizeCameraCompletion:(void (^)(PRPrivacyStatus status))completion;
 
++ (PRPrivacyStatus)statusForLocationStatus:(CLAuthorizationStatus)status;
 + (PRPrivacyStatus)statusForContactsStatus:(ABAuthorizationStatus)status;
 + (PRPrivacyStatus)statusForPhotosStatus:(ALAuthorizationStatus)status;
 + (PRPrivacyStatus)statusForMicrophoneStatus:(AVAudioSessionRecordPermission)status;
 + (PRPrivacyStatus)statusForCameraStatus:(AVAuthorizationStatus)status;
 
++ (instancetype)sharedLocationManager;
+
 @end
 
 @implementation PRPrivacyManager
+
+#pragma mark - Authorize
+
++ (void)authorizeLocationOfSubtype:(PRPrivacySubtype)subtype
+                        Completion:(void (^)(PRPrivacyStatus))completion
+{
+    PRPrivacyStatus status = [self privacyStatusForType:PRPrivacyTypeLocation];
+    if (status == PRPrivacyStatusNotDetermined) {
+        if (![CLLocationManager locationServicesEnabled]) {
+            return;
+        }
+        PRPrivacyManager *sharedLocationManager = [self sharedLocationManager];
+        sharedLocationManager.locationAuthorizationCompletion = completion;
+        if (!IOS_VERSION_LESS_THAN(@"8.0")) {
+            switch (subtype) {
+                case PRPrivacySubtypeAlways:
+                    [sharedLocationManager.locationManager requestAlwaysAuthorization];
+                    break;
+                case PRPrivacySubtypeWhenInUse:
+                    [sharedLocationManager.locationManager requestWhenInUseAuthorization];
+                    break;
+            }
+        } else {
+            [sharedLocationManager.locationManager startUpdatingLocation];
+        }
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) { completion(status); }
+        });
+    }
+}
 
 + (void)authorizeContactsCompletion:(void (^)(PRPrivacyStatus))completion
 {
@@ -112,9 +152,13 @@
     }
 }
 
+#pragma mark - External
+
 + (PRPrivacyStatus)privacyStatusForType:(PRPrivacyType)type
 {
     switch (type) {
+        case PRPrivacyTypeLocation:
+            return [self statusForLocationStatus:[CLLocationManager authorizationStatus]];
         case PRPrivacyTypeContacts:
             return [self statusForContactsStatus:ABAddressBookGetAuthorizationStatus()];
         case PRPrivacyTypePhotos:
@@ -130,9 +174,24 @@
     }
 }
 
-+ (void)authorizeWithType:(PRPrivacyType)type completion:(void (^)(PRPrivacyStatus status))completion
++ (void)authorizeWithType:(PRPrivacyType)type
+               completion:(void (^)(PRPrivacyStatus status))completion
 {
+    [self authorizeWithType:type
+                    subtype:PRPrivacySubtypeAlways
+                 completion:completion];
+}
+
++ (void)authorizeWithType:(PRPrivacyType)type
+                  subtype:(PRPrivacySubtype)subtype
+               completion:(void (^)(PRPrivacyStatus))completion
+{
+    
     switch (type) {
+        case PRPrivacyTypeLocation:
+            [self authorizeLocationOfSubtype:subtype
+                                  Completion:completion];
+            break;
         case PRPrivacyTypeContacts:
             [self authorizeContactsCompletion:completion];
             break;
@@ -149,6 +208,29 @@
 }
 
 #pragma mark - Utils
+
++ (PRPrivacyStatus)statusForLocationStatus:(CLAuthorizationStatus)status
+{
+    switch (status) {
+        case kCLAuthorizationStatusNotDetermined:
+            return PRPrivacyStatusNotDetermined;
+        case kCLAuthorizationStatusRestricted:
+            return PRPrivacyStatusRestricted;
+        case kCLAuthorizationStatusDenied:
+            return PRPrivacyStatusDenied;
+#ifndef __IPHONE_8_0
+        case kCLAuthorizationStatusAuthorized:
+            return PRPrivacyStatusAuthorized;
+#else
+        case kCLAuthorizationStatusAuthorizedAlways:
+            return PRPrivacyStatusAuthorizedAlways;
+        case kCLAuthorizationStatusAuthorizedWhenInUse:
+            return PRPrivacyStatusAuthorizedWhenInUse;
+#endif
+        default:
+            break;
+    }
+}
 
 + (PRPrivacyStatus)statusForContactsStatus:(ABAuthorizationStatus)status
 {
@@ -209,6 +291,46 @@
             return PRPrivacyStatusAuthorized;
         default:
             return PRPrivacyStatusNotDetermined;
+    }
+}
+
+#pragma mark - Getters and setters
+
+- (CLLocationManager *)locationManager
+{
+    if (!_locationManager) {
+        _locationManager = [[CLLocationManager alloc] init];
+        _locationManager.delegate = self;
+    }
+    return _locationManager;
+}
+
+#pragma mark - Life cycle
+
++ (instancetype)sharedLocationManager
+{
+    static id sharedLocationManager;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedLocationManager = [[self alloc] init];
+    });
+    return sharedLocationManager;
+}
+
+#pragma mark - CLLocationManagerDelegate
+
+- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
+{
+    if (manager == self.locationManager) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (self.locationAuthorizationCompletion) {
+                self.locationAuthorizationCompletion([[self class] statusForLocationStatus:status]);
+                self.locationAuthorizationCompletion = nil;
+            }
+            if (IOS_VERSION_LESS_THAN(@"8.0")) {
+                [manager stopUpdatingLocation];
+            }
+        });
     }
 }
 
