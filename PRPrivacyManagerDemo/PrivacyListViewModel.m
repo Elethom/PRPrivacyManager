@@ -18,7 +18,8 @@
 
 - (NSArray *)listItems {
     if (!_listItems) {
-        _listItems = @[@[[PrivacyListItem itemWithType:PRPrivacyTypeContacts],
+        _listItems = @[@[[PrivacyListItem itemWithType:PRPrivacyTypeLocation],
+                         [PrivacyListItem itemWithType:PRPrivacyTypeContacts],
                          [PrivacyListItem itemWithType:PRPrivacyTypePhotos],
                          [PrivacyListItem itemWithType:PRPrivacyTypeMicrophone],
                          [PrivacyListItem itemWithType:PRPrivacyTypeCamera]]];

@@ -18,6 +18,8 @@
 
 - (NSString *)typeString {
     switch (self.type) {
+        case PRPrivacyTypeLocation:
+            return @"Location";
         case PRPrivacyTypeContacts:
             return @"Contacts";
         case PRPrivacyTypePhotos:
@@ -41,6 +43,12 @@
             return @"Denied";
         case PRPrivacyStatusAuthorized:
             return @"Authorized";
+#ifdef __IPHONE_8_0
+        case PRPrivacyStatusAuthorizedAlways:
+            return @"Authorized (Always)";
+        case PRPrivacyStatusAuthorizedWhenInUse:
+            return @"Authorized (When in Use)";
+#endif
         default:
             return nil;
     }
