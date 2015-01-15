@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name                = "PRPrivacyManager"
-  s.version             = "0.1"
+  s.version             = "0.2"
   s.summary             = "All-in-one privacy manager for iOS."
   s.homepage            = "https://github.com/Elethom/PRPrivacyManager"
   s.license             = { :type => "MIT", :file => "LICENSE" }
