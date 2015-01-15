@@ -21,6 +21,11 @@
 + (void)authorizeMicrophoneCompletion:(void (^)(PRPrivacyStatus status))completion;
 + (void)authorizeCameraCompletion:(void (^)(PRPrivacyStatus status))completion;
 
++ (PRPrivacyStatus)statusForContactsStatus:(ABAuthorizationStatus)status;
++ (PRPrivacyStatus)statusForPhotosStatus:(ALAuthorizationStatus)status;
++ (PRPrivacyStatus)statusForMicrophoneStatus:(AVAudioSessionRecordPermission)status;
++ (PRPrivacyStatus)statusForCameraStatus:(AVAuthorizationStatus)status;
+
 @end
 
 @implementation PRPrivacyManager
@@ -180,74 +185,18 @@
 {
     switch (type) {
         case PRPrivacyTypeContacts:
-        {
-            ABAuthorizationStatus status = ABAddressBookGetAuthorizationStatus();
-            switch (status) {
-                case kABAuthorizationStatusNotDetermined:
-                    return PRPrivacyStatusNotDetermined;
-                case kABAuthorizationStatusRestricted:
-                    return PRPrivacyStatusRestricted;
-                case kABAuthorizationStatusDenied:
-                    return PRPrivacyStatusDenied;
-                case kABAuthorizationStatusAuthorized:
-                    return PRPrivacyStatusAuthorized;
-                default:
-                    break;
-            }
-            break;
-        }
+            return [self statusForContactsStatus:ABAddressBookGetAuthorizationStatus()];
         case PRPrivacyTypePhotos:
-        {
-            ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
-            switch (status) {
-                case ALAuthorizationStatusNotDetermined:
-                    return PRPrivacyStatusNotDetermined;
-                case ALAuthorizationStatusRestricted:
-                    return PRPrivacyStatusRestricted;
-                case ALAuthorizationStatusDenied:
-                    return PRPrivacyStatusDenied;
-                case ALAuthorizationStatusAuthorized:
-                    return PRPrivacyStatusAuthorized;
-                default:
-                    break;
-            }
-            break;
-        }
+            return [self statusForPhotosStatus:[ALAssetsLibrary authorizationStatus]];
         case PRPrivacyTypeMicrophone:
-        {
             if (!IOS_VERSION_LESS_THAN(@"8.0")) {
-                AVAudioSessionRecordPermission permission = [AVAudioSession sharedInstance].recordPermission;
-                switch (permission) {
-                    case AVAudioSessionRecordPermissionUndetermined:
-                        return PRPrivacyStatusNotDetermined;
-                    case AVAudioSessionRecordPermissionDenied:
-                        return PRPrivacyStatusDenied;
-                    case AVAudioSessionRecordPermissionGranted:
-                        return PRPrivacyStatusAuthorized;
-                    default:
-                        break;
-                }
+                return [self statusForMicrophoneStatus:[AVAudioSession sharedInstance].recordPermission];
+            } else {
+                return PRPrivacyStatusNotDetermined;
             }
-            break;
-        }
         case PRPrivacyTypeCamera:
-        {
-            AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
-            switch (status) {
-                case AVAuthorizationStatusNotDetermined:
-                    return PRPrivacyStatusNotDetermined;
-                case AVAuthorizationStatusRestricted:
-                    return PRPrivacyStatusRestricted;
-                case AVAuthorizationStatusDenied:
-                    return PRPrivacyStatusDenied;
-                case AVAuthorizationStatusAuthorized:
-                    return PRPrivacyStatusAuthorized;
-                default:
-                    break;
-            }
-        }
+            return [self statusForCameraStatus:[AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo]];
     }
-    return PRPrivacyStatusNotDetermined;
 }
 
 + (void)authorizeWithType:(PRPrivacyType)type completion:(void (^)(PRPrivacyStatus status))completion
@@ -265,6 +214,70 @@
         case PRPrivacyTypeCamera:
             [self authorizeCameraCompletion:completion];
             break;
+    }
+}
+
+#pragma mark - Utils
+
++ (PRPrivacyStatus)statusForContactsStatus:(ABAuthorizationStatus)status
+{
+    switch (status) {
+        case kABAuthorizationStatusNotDetermined:
+            return PRPrivacyStatusNotDetermined;
+        case kABAuthorizationStatusRestricted:
+            return PRPrivacyStatusRestricted;
+        case kABAuthorizationStatusDenied:
+            return PRPrivacyStatusDenied;
+        case kABAuthorizationStatusAuthorized:
+            return PRPrivacyStatusAuthorized;
+        default:
+            return PRPrivacyStatusNotDetermined;
+    }
+}
+
++ (PRPrivacyStatus)statusForPhotosStatus:(ALAuthorizationStatus)status
+{
+    switch (status) {
+        case ALAuthorizationStatusNotDetermined:
+            return PRPrivacyStatusNotDetermined;
+        case ALAuthorizationStatusRestricted:
+            return PRPrivacyStatusRestricted;
+        case ALAuthorizationStatusDenied:
+            return PRPrivacyStatusDenied;
+        case ALAuthorizationStatusAuthorized:
+            return PRPrivacyStatusAuthorized;
+        default:
+            return PRPrivacyStatusNotDetermined;
+    }
+}
+
++ (PRPrivacyStatus)statusForMicrophoneStatus:(AVAudioSessionRecordPermission)status
+{
+    switch (status) {
+        case AVAudioSessionRecordPermissionUndetermined:
+            return PRPrivacyStatusNotDetermined;
+        case AVAudioSessionRecordPermissionDenied:
+            return PRPrivacyStatusDenied;
+        case AVAudioSessionRecordPermissionGranted:
+            return PRPrivacyStatusAuthorized;
+        default:
+            return PRPrivacyStatusNotDetermined;
+    }
+}
+
++ (PRPrivacyStatus)statusForCameraStatus:(AVAuthorizationStatus)status
+{
+    switch (status) {
+        case AVAuthorizationStatusNotDetermined:
+            return PRPrivacyStatusNotDetermined;
+        case AVAuthorizationStatusRestricted:
+            return PRPrivacyStatusRestricted;
+        case AVAuthorizationStatusDenied:
+            return PRPrivacyStatusDenied;
+        case AVAuthorizationStatusAuthorized:
+            return PRPrivacyStatusAuthorized;
+        default:
+            return PRPrivacyStatusNotDetermined;
     }
 }
 
