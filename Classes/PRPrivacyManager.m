@@ -32,99 +32,53 @@
 
 + (void)authorizeContactsCompletion:(void (^)(PRPrivacyStatus))completion
 {
-    ABAuthorizationStatus status = ABAddressBookGetAuthorizationStatus();
-    switch (status) {
-        case kABAuthorizationStatusNotDetermined:
-        {
-            ABAddressBookRequestAccessWithCompletion(NULL, ^(bool granted, CFErrorRef error) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    if (completion) {
-                        completion(granted ? PRPrivacyStatusAuthorized : PRPrivacyStatusDenied);
-                    }
-                });
-            });
-            break;
-        }
-        case kABAuthorizationStatusRestricted:
-        {
+    PRPrivacyStatus status = [self privacyStatusForType:PRPrivacyTypeContacts];
+    if (status == PRPrivacyStatusNotDetermined) {
+        ABAddressBookRequestAccessWithCompletion(NULL, ^(bool granted, CFErrorRef error) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                if (completion) { completion(PRPrivacyStatusRestricted); }
+                if (completion) {
+                    completion(granted ? PRPrivacyStatusAuthorized : PRPrivacyStatusDenied);
+                }
             });
-            break;
-        }
-        case kABAuthorizationStatusDenied:
-        {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (completion) { completion(PRPrivacyStatusDenied); }
-            });
-            break;
-        }
-        case kABAuthorizationStatusAuthorized:
-        {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (completion) { completion(PRPrivacyStatusAuthorized); }
-            });
-            break;
-        }
-        default:
-            break;
+        });
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) { completion(status); }
+        });
     }
 }
 
 + (void)authorizePhotosCompletion:(void (^)(PRPrivacyStatus))completion
 {
-    ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
-    switch (status) {
-        case ALAuthorizationStatusNotDetermined:
-        {
-            ALAssetsLibrary *assetsLibrary = [[ALAssetsLibrary alloc] init];
-            [assetsLibrary enumerateGroupsWithTypes:ALAssetsGroupAll
-                                         usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
-                                             *stop = YES;
-                                             dispatch_async(dispatch_get_main_queue(), ^{
-                                                 if (completion) { completion(PRPrivacyStatusAuthorized); }
-                                             });
-                                         }
-                                       failureBlock:^(NSError *error) {
-                                           if (error.code == ALAssetsLibraryAccessUserDeniedError) {
-                                               dispatch_async(dispatch_get_main_queue(), ^{
-                                                   if (completion) { completion(PRPrivacyStatusDenied); }
-                                               });
-                                           } else if (error.code == ALAssetsLibraryAccessGloballyDeniedError) {
-                                               dispatch_async(dispatch_get_main_queue(), ^{
-                                                   if (completion) { completion(PRPrivacyStatusRestricted); }
-                                               });
-                                           } else {
-                                               dispatch_async(dispatch_get_main_queue(), ^{
-                                                   if (completion) { completion(PRPrivacyStatusNotDetermined); }
-                                               });
-                                           }
-                                       }];
-            break;
-        }
-        case ALAuthorizationStatusRestricted:
-        {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (completion) { completion(PRPrivacyStatusRestricted); }
-            });
-            break;
-        }
-        case ALAuthorizationStatusDenied:
-        {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (completion) { completion(PRPrivacyStatusDenied); }
-            });
-            break;
-        }
-        case ALAuthorizationStatusAuthorized:
-        {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (completion) { completion(PRPrivacyStatusAuthorized); }
-            });
-            break;
-        }
-        default:
-            break;
+    PRPrivacyStatus status = [self privacyStatusForType:PRPrivacyTypePhotos];
+    if (status == PRPrivacyStatusNotDetermined) {
+        ALAssetsLibrary *assetsLibrary = [[ALAssetsLibrary alloc] init];
+        [assetsLibrary enumerateGroupsWithTypes:ALAssetsGroupAll
+                                     usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
+                                         *stop = YES;
+                                         dispatch_async(dispatch_get_main_queue(), ^{
+                                             if (completion) { completion(PRPrivacyStatusAuthorized); }
+                                         });
+                                     }
+                                   failureBlock:^(NSError *error) {
+                                       if (error.code == ALAssetsLibraryAccessUserDeniedError) {
+                                           dispatch_async(dispatch_get_main_queue(), ^{
+                                               if (completion) { completion(PRPrivacyStatusDenied); }
+                                           });
+                                       } else if (error.code == ALAssetsLibraryAccessGloballyDeniedError) {
+                                           dispatch_async(dispatch_get_main_queue(), ^{
+                                               if (completion) { completion(PRPrivacyStatusRestricted); }
+                                           });
+                                       } else {
+                                           dispatch_async(dispatch_get_main_queue(), ^{
+                                               if (completion) { completion(PRPrivacyStatusNotDetermined); }
+                                           });
+                                       }
+                                   }];
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) { completion(status); }
+        });
     }
 }
 
@@ -141,43 +95,20 @@
 
 + (void)authorizeCameraCompletion:(void (^)(PRPrivacyStatus status))completion
 {
-    AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
-    switch (status) {
-        case AVAuthorizationStatusNotDetermined:
-        {
-            [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo
-                                     completionHandler:^(BOOL granted) {
-                                         dispatch_async(dispatch_get_main_queue(), ^{
-                                             if (completion) {
-                                                 completion(granted ? PRPrivacyStatusAuthorized : PRPrivacyStatusDenied);
-                                             }
-                                         });
-                                     }];
-            break;
-        }
-        case AVAuthorizationStatusRestricted:
-        {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (completion) { completion(PRPrivacyStatusRestricted); }
-            });
-            break;
-        }
-        case AVAuthorizationStatusDenied:
-        {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (completion) { completion(PRPrivacyStatusDenied); }
-            });
-            break;
-        }
-        case AVAuthorizationStatusAuthorized:
-        {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (completion) { completion(PRPrivacyStatusAuthorized); }
-            });
-            break;
-        }
-        default:
-            break;
+    PRPrivacyStatus status = [self privacyStatusForType:PRPrivacyTypeCamera];
+    if (status == PRPrivacyStatusNotDetermined) {
+        [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo
+                                 completionHandler:^(BOOL granted) {
+                                     dispatch_async(dispatch_get_main_queue(), ^{
+                                         if (completion) {
+                                             completion(granted ? PRPrivacyStatusAuthorized : PRPrivacyStatusDenied);
+                                         }
+                                     });
+                                 }];
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) { completion(status); }
+        });
     }
 }
 
