@@ -6,7 +6,7 @@ All-in-one privacy manager for iOS.
 
 Currently supported:
 
-- [ ] Location Services
+- [x] Location Services
 - [x] Contacts
 - [ ] Calendars
 - [ ] Reminders
@@ -44,14 +44,23 @@ PRPrivacyStatus privacyStatus = [PRPrivacyManager privacyStatusForType:PRPrivacy
                          }];
 ```
 
+```
+[PRPrivacyManager authorizeWithType:PRPrivacyTypeLocation
+                            subtype:PRPrivacySubtypeWhenInUse
+                         completion:^(PRPrivacyStatus status) {
+                             // Handle result
+                         }];
+```
+
 ### Available Types
 
 ```
 typedef NS_ENUM(NSUInteger, PRPrivacyType) {
+    PRPrivacyTypeLocation,
     PRPrivacyTypeContacts,
     PRPrivacyTypePhotos,
     PRPrivacyTypeMicrophone,
-    PRPrivacyTypeCamera
+    PRPrivacyTypeCamera,
 };
 ```
 
@@ -62,7 +71,11 @@ typedef NS_ENUM(NSUInteger, PRPrivacyStatus) {
     PRPrivacyStatusNotDetermined,
     PRPrivacyStatusRestricted,
     PRPrivacyStatusDenied,
-    PRPrivacyStatusAuthorized
+    PRPrivacyStatusAuthorized,
+#ifdef __IPHONE_8_0
+    PRPrivacyStatusAuthorizedAlways,
+    PRPrivacyStatusAuthorizedWhenInUse,
+#endif
 };
 ```
 
