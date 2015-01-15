@@ -12,14 +12,14 @@ typedef NS_ENUM(NSUInteger, PRPrivacyType) {
     PRPrivacyTypeContacts,
     PRPrivacyTypePhotos,
     PRPrivacyTypeMicrophone,
-    PRPrivacyTypeCamera
+    PRPrivacyTypeCamera,
 };
 
 typedef NS_ENUM(NSUInteger, PRPrivacyStatus) {
     PRPrivacyStatusNotDetermined,
     PRPrivacyStatusRestricted,
     PRPrivacyStatusDenied,
-    PRPrivacyStatusAuthorized
+    PRPrivacyStatusAuthorized,
 };
 
 @interface PRPrivacyManager : NSObject
