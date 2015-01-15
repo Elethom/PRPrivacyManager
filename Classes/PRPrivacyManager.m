@@ -10,6 +10,9 @@
 #import <AddressBook/AddressBook.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <AVFoundation/AVFoundation.h>
+#import <UIKit/UIDevice.h>
+
+#define IOS_VERSION_LESS_THAN(version) ([[[UIDevice currentDevice] systemVersion] compare:version options:NSNumericSearch] == NSOrderedAscending)
 
 @interface PRPrivacyManager ()
 
@@ -207,7 +210,19 @@
         }
         case PRPrivacyTypeMicrophone:
         {
-            return PRPrivacyStatusNotDetermined;
+            if (!IOS_VERSION_LESS_THAN(@"8.0")) {
+                AVAudioSessionRecordPermission permission = [AVAudioSession sharedInstance].recordPermission;
+                switch (permission) {
+                    case AVAudioSessionRecordPermissionUndetermined:
+                        return PRPrivacyStatusNotDetermined;
+                    case AVAudioSessionRecordPermissionDenied:
+                        return PRPrivacyStatusDenied;
+                    case AVAudioSessionRecordPermissionGranted:
+                        return PRPrivacyStatusAuthorized;
+                }
+            } else {
+                return PRPrivacyStatusNotDetermined;
+            }
         }
         case PRPrivacyTypeCamera:
         {
