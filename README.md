@@ -2,6 +2,8 @@
 
 [![Cocoapods](https://cocoapod-badges.herokuapp.com/v/PRPrivacyManager/badge.png)](http://cocoapods.org/?q=PRPrivacyManager)
 
+## General
+
 All-in-one privacy manager for iOS.
 
 Currently supported:
@@ -88,13 +90,15 @@ This code is distributed under the terms and conditions of the [MIT license](htt
 You can support me by:
 
 * sending me iTunes Gift Cards;
-* via Alipay: elethomhunter@gmail.com
-* via PayPal: elethomhunter@gmail.com
+* via [Alipay](https://www.alipay.com): elethomhunter@gmail.com
+* via [PayPal](https://www.paypal.com): elethomhunter@gmail.com
 
 :-)
 
 ## Contact
 
+* [Telegram](https://telegram.org): [@elethom](http://telegram.me/elethom)
 * [Email](mailto:elethomhunter@gmail.com)
 * [Twitter](https://twitter.com/elethomhunter)
+* [Blog](http://blog.projectrhinestone.org)
 
