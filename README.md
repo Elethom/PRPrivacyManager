@@ -2,8 +2,6 @@
 
 [![Cocoapods](https://cocoapod-badges.herokuapp.com/v/PRPrivacyManager/badge.png)](http://cocoapods.org/?q=PRPrivacyManager)
 
-## General
-
 All-in-one privacy manager for iOS.
 
 Currently supported:
