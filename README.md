@@ -1,6 +1,11 @@
 # PRPrivacyManager
 
-[![Cocoapods](https://cocoapod-badges.herokuapp.com/v/PRPrivacyManager/badge.png)](http://cocoapods.org/?q=PRPrivacyManager)
+[![CocoaPods](https://img.shields.io/cocoapods/v/PRPrivacyManager.svg)](https://cocoapods.org/pods/PRPrivacyManager)
+[![Language](https://img.shields.io/badge/language-Objective--C-blue.svg)](../../search)
+[![License](https://img.shields.io/github/license/Elethom/PRPrivacyManager.svg)](/LICENSE)
+
+[![Tweet](https://img.shields.io/twitter/url/http/ElethomHunter.svg?style=social)](https://twitter.com/intent/tweet?text=PRPrivacyManager%3A%20All-in-one%20privacy%20manager%20for%20iOS.&url=https%3A%2F%2Fgithub.com%2FElethom%2FPRPrivacyManager&via=ElethomHunter)
+[![Twitter](https://img.shields.io/twitter/follow/ElethomHunter.svg?style=social)](https://twitter.com/intent/follow?user_id=1512633926)
 
 All-in-one privacy manager for iOS.
 
