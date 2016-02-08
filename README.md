@@ -28,7 +28,7 @@ Currently supported:
 
 In your `Podfile`:
 
-```
+```Ruby
 pod 'PRPrivacyManager'
 ```
 
@@ -36,20 +36,20 @@ pod 'PRPrivacyManager'
 
 ### Check for Status 
 
-```
+```Objective-C
 PRPrivacyStatus privacyStatus = [PRPrivacyManager privacyStatusForType:PRPrivacyTypeContacts];
 ```
 
 ### Ask for Permission
 
-```
+```Objective-C
 [PRPrivacyManager authorizeWithType:PRPrivacyTypeContacts
                          completion:^(PRPrivacyStatus status) {
                              // Handle result
                          }];
 ```
 
-```
+```Objective-C
 [PRPrivacyManager authorizeWithType:PRPrivacyTypeLocation
                             subtype:PRPrivacySubtypeWhenInUse
                          completion:^(PRPrivacyStatus status) {
@@ -59,7 +59,7 @@ PRPrivacyStatus privacyStatus = [PRPrivacyManager privacyStatusForType:PRPrivacy
 
 ### Available Types
 
-```
+```Objective-C
 typedef NS_ENUM(NSUInteger, PRPrivacyType) {
     PRPrivacyTypeLocation,
     PRPrivacyTypeContacts,
@@ -71,7 +71,7 @@ typedef NS_ENUM(NSUInteger, PRPrivacyType) {
 
 ### Statuses
 
-```
+```Objective-C
 typedef NS_ENUM(NSUInteger, PRPrivacyStatus) {
     PRPrivacyStatusNotDetermined,
     PRPrivacyStatusRestricted,
